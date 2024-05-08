@@ -1,7 +1,7 @@
 // vamos a cargar los 4 primeros puntuaciones en la carga de la pagina
 $(document).ready(function(){
+    initializeUserSession();
     //cargar las 4 primeras puntuaciones sacandolas de un servicio web montado en node
-    alert("hola");
     $.ajax({
         url: "http://52.3.170.212:8080/api/games/recent",
         type: "GET",
@@ -12,11 +12,10 @@ $(document).ready(function(){
             $(".ranking-list").empty();
             
             for (var i = 0; i < partidas.length; i++) { 
-                console.log(partidas[i]);
                 html = "<div class='ranking-item'>" + 
-                    "<img src='https://picsum.photos/240/120' alt='User Avatar' class='user-avatar rounded'>" +
+                    "<img src='Resources/Tutorial4_2.png' alt='User Avatar' class='user-avatar rounded'>" +
                     "<div class='user-info'>" +
-                    "<h3 class='user-name'>" + partidas[i].user_id + "</h3>" +
+                    "<h3 class='user-name'>" + partidas[i].username + "</h3>" +
                     "<div class='user-stats'>" +
                     "<span class='user-level'><i class='fas fa-chart-line'></i> " + partidas[i].level + "</span>" +
                     "<span class='user-wave'><i class='fas fa-water'></i> " + partidas[i].wave + "</span>" +
@@ -30,3 +29,60 @@ $(document).ready(function(){
         }
     });
 });
+
+async function initializeUserSession() {
+    var token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const sessionResponse = await $.ajax({
+                url: "http://nasalmi.duckdns.org/api/verificar-sesion", // Usar el dominio
+                type: "GET",
+                headers: { 'Authorization': 'Bearer ' + token },
+                xhrFields: {
+                    withCredentials: true // Importante para enviar cookies cross-domain
+                },
+                crossDomain: true // Especificar explícitamente para claridad
+            });
+
+            console.log("Sesión activa:", sessionResponse.userId);
+            localStorage.setItem('userId', sessionResponse.userId);
+            $("#logoutButton").show();
+            $("#loginButton").hide();
+            $("#userButton").show();
+
+        } catch (xhr) {
+            console.log("Sesión no activa:", xhr.responseText);
+            localStorage.removeItem('token');
+            alert("Tu sesión ha expirado, por favor inicia sesión nuevamente.");
+        }
+    } else {
+        console.log("No hay token almacenado, usuario no logueado.");
+    }
+}
+
+
+/*async function initializeUserSession() {
+    var token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const sessionResponse = await $.ajax({
+                url: "http://52.3.170.212:8080/api/verificar-sesion",
+                type: "GET",
+                headers: { 'Authorization': 'Bearer ' + token },
+            });
+
+            console.log("Sesión activa:", sessionResponse.userId);
+            localStorage.setItem('userId', sessionResponse.userId);
+            $("#logoutButton").show();
+            $("#loginButton").hide();
+            $("#userButton").show();
+
+        } catch (xhr) {
+            console.log("Sesión no activa:", xhr.responseText);
+            localStorage.removeItem('token');
+            alert("Tu sesión ha expirado, por favor inicia sesión nuevamente.");
+        }
+    } else {
+        console.log("No hay token almacenado, usuario no logueado.");
+    }
+}*/
